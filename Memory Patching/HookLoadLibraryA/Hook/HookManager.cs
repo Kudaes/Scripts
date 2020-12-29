@@ -42,7 +42,7 @@ namespace Hook
 
         public HookManager()
         {
-            libraryName = "c:\\windows\\system32\\kernel32.dll";
+            libraryName = "c:\\windows\\system32\\kernelbase.dll";
             functionName = "LoadLibraryA";
             originalOpcodes = is64BitsProcessor() ? new byte[13] : new byte[6];
             libraryAddress = LoadLibrary(libraryName);
