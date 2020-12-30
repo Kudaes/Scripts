@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace ExportedFunctions
+namespace PatchFinder
 {
     class Utils
     {

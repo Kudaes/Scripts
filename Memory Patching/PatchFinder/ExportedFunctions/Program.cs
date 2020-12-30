@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace ExportedFunctions
+namespace PatchFinder
 {
     class Program
     {

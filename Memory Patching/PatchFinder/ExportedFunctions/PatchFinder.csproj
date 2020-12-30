@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CB4A5B44-F49C-4BDD-94F6-EA73BF509A15}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ExportedFunctions</RootNamespace>
-    <AssemblyName>ExportedFunctions</AssemblyName>
+    <RootNamespace>PatchFinder</RootNamespace>
+    <AssemblyName>PatchFinder</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
