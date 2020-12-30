@@ -24,11 +24,31 @@ namespace ExportedFunctions
                 case "patch":
                     h.unhook(inputFile, functions, bytes);
                     break;
+                case "-h":
+                    printHelp();
+                    break;
                 default:
                     Console.WriteLine("Unknown command.");
                     break;
             }
             return true;
+        }
+
+        public static void printHelp()
+        {
+            var help = @"
+usage:  patchFinder.exe enumerate [options]
+        patchFinder.exe check [options]
+        patchFinder.exe patch [options]
+
+  options:
+    -i  Input file (usefull to check or patch). 
+    -o  Save output to file (usefull with 'enumerate').  
+    -b  Number of bytes used to enumerate/check/patch hooks (by default: 13 for x64, 6 for x86). 
+    -f  Concrete function used to enumerate/check/patch hooks (e.g. kernel32>LoadLibraryA&ntdll.dll>NtCreateFile).
+
+";
+            Console.WriteLine(help);
         }
 
         public static void getValues(string[] args, out string inputFile, out string outputFile, out string functions, out string bytes, out int number)

@@ -69,7 +69,7 @@ namespace GoldenLoader
             }
         }
 
-        private static void printHelp()
+        public static void printHelp()
         {
             var help = @"
 usage:  GoldenLoader.exe load -u <url> -t <type> [options]

@@ -9,6 +9,7 @@ namespace GoldenLoader
             if (args.Length == 0)
             {
                 Console.WriteLine("Not enough arguments");
+                Utils.printHelp();
                 return;
             }
 
