@@ -37,14 +37,14 @@ namespace ExportedFunctions
         public static void printHelp()
         {
             var help = @"
-usage:  patchFinder.exe enumerate [options]
+usage:  patchFinder.exe enumerate -o output.txt [options]
         patchFinder.exe check [options]
         patchFinder.exe patch [options]
 
   options:
     -i  Input file (usefull to check or patch). 
-    -o  Save output to file (usefull with 'enumerate').  
-    -b  Number of bytes used to enumerate/check/patch hooks (by default: 13 for x64, 6 for x86). 
+    -o  Save output to file (mandatory when using 'enumerate').  
+    -b  Bytes value used to check for hooks or used to patch some function (e.g. -b '4010AA320204'). 
     -f  Concrete function used to enumerate/check/patch hooks (e.g. kernel32>LoadLibraryA&ntdll.dll>NtCreateFile).
 
 ";

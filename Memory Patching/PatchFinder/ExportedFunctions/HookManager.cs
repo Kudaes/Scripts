@@ -175,9 +175,7 @@ namespace ExportedFunctions
 
             if(filepath != null)
                 writeBytesToFile(filepath);
-            else
-                printBytes();
-            
+
         }
 
         public void checkPatch(string filepath, string funcs, string b)
@@ -349,23 +347,6 @@ namespace ExportedFunctions
 
         }
 
-
-        private void printBytes()
-        {
-            var count = 0;
-            foreach (var dll in dllsName)
-            {
-                var count2 = 0;
-                foreach (var func in functionsName)
-                {
-                    var spl1 = func.Split(';');
-                    var spl2 = firstBytes[count].Split(';');
-                    Console.WriteLine("[*] " + dll + "!" + spl1[count2] + ": " + spl2[count2]);
-                    count2++;
-                }
-                count++;
-            }
-        }
 
         private bool validDll(string dll, List<string> selected)
         {

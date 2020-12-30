@@ -1,7 +1,5 @@
 ﻿
 using System;
-using System.Threading;
-
 
 namespace ExportedFunctions
 {
@@ -15,6 +13,7 @@ namespace ExportedFunctions
             if(args.Length == 0)
             {
                 Console.WriteLine("Not enough arguments");
+                Utils.printHelp();
                 return;
             }
 
