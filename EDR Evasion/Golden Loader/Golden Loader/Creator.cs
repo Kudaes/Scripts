@@ -266,6 +266,8 @@ namespace GoldenLoader
         public enum BinarySignaturePolicy : ulong
         {
             BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON = 0x100000000000,
+            PROHIBIT_DYNAMIC_CODE_ALWAYS_ON = 0x1000000000 // this could be use to enable PROCESS_CREATION_MITIGATION_POLICY_BLOCK_NON_MICROSOFT_BINARIES_ALWAYS_ON
+                                                           // ACG -> https://blog.xpnsec.com/protecting-your-malware/
         }
 
         [Flags]
