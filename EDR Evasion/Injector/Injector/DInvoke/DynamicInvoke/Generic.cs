@@ -322,6 +322,78 @@ namespace DInvoke.DynamicInvoke
             return FunctionPtr;
         }
 
+        private static int Sort(EAT x, EAT y)
+        {
+            return 0;
+        }
+
+        public static List<EAT> GetExportAddressEx(IntPtr ModuleBase)
+        {
+            IntPtr FunctionPtr = IntPtr.Zero;
+            List<EAT> eat = new List<EAT>();
+            try
+            {
+                // Traverse the PE header in memory
+                Int32 PeHeader = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + 0x3C));
+                Int16 OptHeaderSize = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + PeHeader + 0x14));
+                Int64 OptHeader = ModuleBase.ToInt64() + PeHeader + 0x18;
+                Int16 Magic = Marshal.ReadInt16((IntPtr)OptHeader);
+                Int64 pExport = 0;
+                if (Magic == 0x010b)
+                {
+                    pExport = OptHeader + 0x60;
+                }
+                else
+                {
+                    pExport = OptHeader + 0x70;
+                }
+
+                // Read -> IMAGE_EXPORT_DIRECTORY
+                Int32 ExportRVA = Marshal.ReadInt32((IntPtr)pExport);
+                Int32 OrdinalBase = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x10));
+                Int32 NumberOfFunctions = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x14));
+                Int32 NumberOfNames = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x18));
+                Int32 FunctionsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x1C));
+                Int32 NamesRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x20));
+                Int32 OrdinalsRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + ExportRVA + 0x24));
+
+                // Get the VAs of the name table's beginning and end.
+                Int64 NamesBegin = ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA));
+                Int64 NamesFinal = NamesBegin + NumberOfNames * 4;
+
+                // Loop the array of export name RVA's
+                for (int i = 0; i < NumberOfNames; i++)
+                {
+                    string FunctionName = Marshal.PtrToStringAnsi((IntPtr)(ModuleBase.ToInt64() + Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + NamesRVA + i * 4))));
+
+                    if (FunctionName.StartsWith("Zw", StringComparison.OrdinalIgnoreCase))
+                    {
+                        FunctionName = FunctionName.Replace("Zw", "Nt");
+                        Int32 FunctionOrdinal = Marshal.ReadInt16((IntPtr)(ModuleBase.ToInt64() + OrdinalsRVA + i * 2)) + OrdinalBase;
+                        Int32 FunctionRVA = Marshal.ReadInt32((IntPtr)(ModuleBase.ToInt64() + FunctionsRVA + (4 * (FunctionOrdinal - OrdinalBase))));
+                        IntPtr ptr = (IntPtr)((Int64)ModuleBase + FunctionRVA);
+                        EAT n = new EAT(FunctionName, ptr);
+                        eat.Add(n);
+                    }
+                }
+            }
+            catch
+            {
+                // Catch parser failure
+                throw new InvalidOperationException("Failed to parse module exports.");
+            }
+
+            eat.Sort(delegate (EAT x, EAT y)
+            {
+                if (x.Address == IntPtr.Zero || y.Address == IntPtr.Zero) return 0;
+               /* else if (x.Address == IntPtr.Zero) return -1;
+                else if (y.Address == IntPtr.Zero) return 1;*/
+                else return ((long)x.Address).CompareTo((long)y.Address);
+            });
+
+            return eat;
+        }
+
         /// <summary>
         /// Given a module base address, resolve the address of a function by manually walking the module export table.
         /// </summary>
@@ -872,6 +944,46 @@ namespace DInvoke.DynamicInvoke
             Native.NtFreeVirtualMemory((IntPtr)(-1), ref pImage, ref RegionSize, Data.Win32.Kernel32.MEM_RELEASE);
 
             return pCallStub;
+        }
+    }
+
+    public class EAT
+    {
+
+        public string Hash { get; set; }
+        public IntPtr Address { get; set; }
+
+        public EAT(string functionName, IntPtr ptr)
+        {
+            Hash = GetSha256Hash(functionName);
+            Address = ptr;
+        }
+
+        public static string GetSha256Hash(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return string.Empty;
+
+            using (var sha = new SHA256Managed())
+            {
+                byte[] textData = Encoding.UTF8.GetBytes(text);
+                byte[] hash = sha.ComputeHash(textData);
+                return BitConverter.ToString(hash).Replace("-", String.Empty);
+            }
+        }
+
+        public static Dictionary<string,int> ConvertToDict(List<EAT> eat)
+        {
+            var dict = new Dictionary<string,int>();
+            int sysId = 0x0000;
+
+            foreach(var a in eat)
+            {
+                dict.Add(a.Hash, sysId);
+                sysId++;
+            }
+
+            return dict;
         }
     }
 }
