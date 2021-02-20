@@ -43,7 +43,7 @@ namespace shinjector
                         break;
                     }
                 default: break;
-                   
+
             }
 
             while (true) { }
@@ -52,8 +52,14 @@ namespace shinjector
 
         private static void printHelp()
         {
-            var help = "Usage: shinjector.exe <tipo> <url>";
+            var help = "\nUsage: shinjector.exe <type> <url> \n\n" +
+                "   type = 1 - PInvoke. \n" +
+                "   type = 2 - NTDLL. \n" +
+                "   type = 3 - Manual Mapping. \n" +
+                "   type = 4 - Direct Syscalls. \n";
+
             Console.WriteLine(help);
+
         }
     }
 
