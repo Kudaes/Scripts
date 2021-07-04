@@ -72,7 +72,7 @@ namespace Domains
         private void LoadAssembly(string url, out string aName)
         {
             byte[] buffer = new System.Net.WebClient().DownloadData(url);
-            ass = Assembly.Load(buffer);
+            ass = TransactedAssembly.Load(buffer);//Assembly.Load(buffer);
             if (ass.GetModules().Length == 1)
                 aName = ass.GetModules()[0].ScopeName;
             else
