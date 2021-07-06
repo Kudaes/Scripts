@@ -19,7 +19,7 @@ namespace Domains
                         if (url == "")
                             Console.WriteLine("Invalid url.");
                         else
-                            m.loadAssembly(url, method);
+                            m.loadAssembly(url, method, assembly);
 
                         break;
                     case "unload":

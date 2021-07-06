@@ -8,7 +8,7 @@ namespace Domains
 
     /**
      * This code has been obtained from this amazing project: https://github.com/G0ldenGunSec/SharpTransactedLoad. 
-     * I just adjusted it to fit it in this code, avoiding the dependency on EasyHook.
+     * I just adjusted it to fit it in my code, avoiding the dependency on EasyHook.
      * For more detailed information about this technique, consult the original blog post: https://blog.redxorblue.com/2021/05/assemblylie-using-transactional-ntfs.html
     **/
     public class TransactedAssembly
@@ -32,13 +32,12 @@ namespace Domains
             else
             {
                 loadedAssemblyName = assemblyName;
-#if (DEBUG)
+
                 Console.WriteLine("[*] Parsing skipped, using {0} as assembly name", loadedAssemblyName);
-#endif
+
             }
-#if (DEBUG)
+
             Console.WriteLine("\r\n[*] Kicking off assembly load process");
-#endif
 
             IntPtr UOW = IntPtr.Zero;
             IntPtr lpTransactionAttributes = IntPtr.Zero;
@@ -54,20 +53,20 @@ namespace Domains
             try
             {
                 transactionHandle = API.CreateTransaction(lpTransactionAttributes, UOW, CreateOptions, IsolationLevel, IsolationFlags, Timeout, Description);
-#if (DEBUG)
+
                 Console.WriteLine("    --Transaction created");
                 Console.WriteLine("      |-> Name: " + Description.ToString());
                 Console.WriteLine("      |-> Handle: " + transactionHandle.ToString());
-#endif
+
                 //this can be named anything, it never is written through to disk and is cleared upon exiting the Load() method. Only req is that it is a valid filepath the current user has write privs to.
                 string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 path = path + string.Format(@"\{0}.log", getRandomName(rand));
                 createFileHandle = API.CreateFileTransactedW(path, 0x80000000 | 0x40000000, 0x00000002, IntPtr.Zero, 0x00000001, 0x100 | 0x04000000, IntPtr.Zero, transactionHandle, ref miniVersion, IntPtr.Zero);
-#if (DEBUG)
+
                 Console.WriteLine("    --Transacted file created");
                 Console.WriteLine("      |-> Name: " + path);
                 Console.WriteLine("      |-> Handle: " + createFileHandle.ToString());
-#endif
+
                 if (createFileHandle.ToInt32() == -1)
                 {
                     throw new ArgumentException("Error - Invalid handle returned by CreateFileTransacted call");
@@ -75,37 +74,22 @@ namespace Domains
                 uint bytesWritten = 0;
                 assemblyLength = assemblyBytes.Length;
                 bool written = API.WriteFile(createFileHandle, assemblyBytes, (uint)assemblyBytes.Length, out bytesWritten, IntPtr.Zero);
-#if (DEBUG)
+
                 Console.WriteLine("    --Bytes written to transacted file: " + bytesWritten);
-#endif
+
             }
             catch
             {
-#if (DEBUG)
+
                 Console.WriteLine("[X] Error creating transaction - ensure folder path exists and you have write privs to it");
-#endif
+
                 return null;
             }
 
 
 
             HookManager hm = new HookManager();
-            hm.Install();
-
-            /*
-            //set hooks
-            var attribsHook = EasyHook.LocalHook.Create(EasyHook.LocalHook.GetProcAddress("Kernel32.dll", "GetFileAttributesW"), new API.DELEGATES.GetFileAttributesW(GetFileAttributesWDetour), null);
-            attribsHook.ThreadACL.SetExclusiveACL(new int[] { -1 });
-
-            var attribsExHook = EasyHook.LocalHook.Create(EasyHook.LocalHook.GetProcAddress("Kernel32.dll", "GetFileAttributesExW"), new API.DELEGATES.GetFileAttributesExW(GetFileAttributesExWDetour), null);
-            attribsExHook.ThreadACL.SetExclusiveACL(new int[] { -1 });
-
-            var createFileHook = EasyHook.LocalHook.Create(EasyHook.LocalHook.GetProcAddress("Kernel32.dll", "CreateFileW"), new API.DELEGATES.CreateFileW(CreateFileWDetour), null);
-            createFileHook.ThreadACL.SetExclusiveACL(new int[] { -1 });
-
-            var infoByHandleHook = EasyHook.LocalHook.Create(EasyHook.LocalHook.GetProcAddress("Kernel32.dll", "GetFileInformationByHandle"), new API.DELEGATES.GetFileInformationByHandle(GetFileInformationByHandleDetour), null);
-            infoByHandleHook.ThreadACL.SetExclusiveACL(new int[] { -1 });
-            */
+            hm.Install(); //Add hooks
 
             Assembly a = null;
             try
@@ -114,46 +98,29 @@ namespace Domains
             }
             catch
             {
-#if (DEBUG)
                 Console.WriteLine("[X] Error running hooked Assembly.Load. Ensure you're building as x64 and that loaded assembly name is correct, otherwise may be some funny business messing with our hooks (debugger etc.)");
-#endif
             }
 
             try
             {
-                hm.Uninstall();
-
-                /*
-                //remove hooks
-                attribsHook.Dispose();
-                attribsExHook.Dispose();
-                infoByHandleHook.Dispose();
-                createFileHook.Dispose();
-                attribDataSet = false;
-                ^*/
+                hm.Uninstall(); //Remove hooks
 
                 //Per MS -- "If the last transaction handle is closed before a client calls the CommitTransaction function with the transaction handle, then KTM rolls back the transaction"
                 //this means we shouldn't have to manually delete the transaction with RollbackTransaction()
                 API.CloseHandle(createFileHandle);
                 API.CloseHandle(transactionHandle);
 
-#if (DEBUG)
                 Console.WriteLine("[*] Cleaned up handles and hooks");
-#endif
             }
             catch
             {
-#if (DEBUG)
                 Console.WriteLine("[X] Error Closing handles and cleaning hooks");
-#endif
             }
 
 
             if (a != null)
             {
-#if (DEBUG)
                 Console.WriteLine("[+] Successfully loaded assembly, passing object back to caller");
-#endif
             }
             return a;
 
@@ -176,9 +143,7 @@ namespace Domains
             string fileName = Marshal.PtrToStringUni(lpFileName);
             if (fileName.EndsWith(loadedAssemblyName, StringComparison.OrdinalIgnoreCase))
             {
-#if (DEBUG)
                 Console.WriteLine("[*] Intercepted hooked GetFileAttributes call for our assembly");
-#endif
                 //32 == FILE_ATTRIBUTE_ARCHIVE  -- default value returned when Assembly.Load() is ran with an on-disk assembly
                 return 32;
             }
@@ -193,9 +158,7 @@ namespace Domains
             string fileName = Marshal.PtrToStringUni(lpFileName);
             if (fileName.EndsWith(loadedAssemblyName, StringComparison.OrdinalIgnoreCase))
             {
-#if (DEBUG)
                 Console.WriteLine("[*] Intercepted hooked GetFileAttributesEx call for our assembly");
-#endif
                 //builds a byte array that represents a WIN32_FILE_ATTRIBUTE_DATA structure.  Will only build it once as this call is made twice in an Assembly.Load() call
                 if (!attribDataSet)
                 {
@@ -228,9 +191,7 @@ namespace Domains
         {
             if (lpFileName.EndsWith(loadedAssemblyName, StringComparison.OrdinalIgnoreCase))
             {
-#if (DEBUG)
                 Console.WriteLine("[*] Intercepted hooked CreateFileW call for our assembly");
-#endif
                 //if a request is made for the nonexistent assembly we're attempting to load, we return a handle to our memory-only transacted file
                 return createFileHandle;
             }
@@ -242,9 +203,7 @@ namespace Domains
         {
             if (hFile == createFileHandle)
             {
-#if (DEBUG)
                 Console.WriteLine("[*] Intercepted hooked GetFileInformationByHandle for our assembly");
-#endif
                 //builds a byte array that represents a BY_HANDLE_FILE_INFORMATION struct and writes it to the lpFileInformation pointer
                 //contains the same information first provided in the GetFileAttributesExW call as the CLR compares these to ensure it has a handle to the correct file
                 byte[] handleFileInfoData = new byte[52];

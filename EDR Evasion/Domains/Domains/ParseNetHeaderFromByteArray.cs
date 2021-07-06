@@ -6,26 +6,25 @@ namespace Domains
 {
     public static class ParseNetHeaderFromByteArray
     {
+        /**
+         * This code has been obtained from this amazing project: https://github.com/G0ldenGunSec/SharpTransactedLoad. 
+         * I just adjusted it to fit it in my code, avoiding the dependency on EasyHook.
+         * For more detailed information about this technique, consult the original blog post: https://blog.redxorblue.com/2021/05/assemblylie-using-transactional-ntfs.html
+        **/
         public static string ParseArray(byte[] assemblyBytes)
         {
-#if (DEBUG)
             Console.WriteLine("[*] Parsing header structure of provided assembly bytes");
-#endif
             int architecture = (int)BitConverter.ToUInt16(assemblyBytes, 152);
             int arrayPos;
             if (architecture == 523) // PE64
             {
                 arrayPos = (int)BitConverter.ToUInt32(assemblyBytes, 520) - 7680;
-#if (DEBUG)
                 Console.WriteLine("[*] Assembly architecture identified: PE64");
-#endif
             }
             else //PE32
             {
                 arrayPos = (int)BitConverter.ToUInt32(assemblyBytes, 528) - 7680;
-#if (DEBUG)
                 Console.WriteLine("[*] Assembly architecture identified: PE32");
-#endif
             }
 
             //will need this index a few more times for various operations
@@ -40,9 +39,7 @@ namespace Domains
             }
             arrayPos = arrayPos + 4;
             int streamNumber = (int)BitConverter.ToUInt16(assemblyBytes, arrayPos);
-#if (DEBUG)
             Console.WriteLine("[*] Metadata streams identified");
-#endif
 
             //advance from # of streams to start of stream info
             arrayPos = arrayPos + 2;
@@ -61,9 +58,7 @@ namespace Domains
                     currByte = assemblyBytes[arrayPos];
                 }
                 streamData singleStream = new streamData(offset, size, System.Text.Encoding.ASCII.GetString(assemblyBytes, stringStartPos, arrayPos - stringStartPos));
-#if (DEBUG)
                 Console.WriteLine("    --found stream: {0} with offset {1} ", singleStream.name, singleStream.offset);
-#endif
                 allStreams.Add(singleStream);
                 //string vals are padded at the end with null bytes to get them to a valid dword blocksize (%4 == 0), will pad with 4 null if already full dword 
                 arrayPos = arrayPos + 4 - (arrayPos % 4);
@@ -97,9 +92,7 @@ namespace Domains
                         //*should* be a valid match (at least from my testing)
                         foundStringPointer = true;
                         stringOffset = BitConverter.ToUInt16(dwordTestBytes, 2);
-#if (DEBUG)
                         Console.WriteLine("[*] Identified PE name offset of {0} in #Strings", BitConverter.ToUInt16(dwordTestBytes, 2));
-#endif
                     }
                 }
                 streamOffset = streamOffset + 4;
@@ -116,16 +109,12 @@ namespace Domains
                     stringPos = stringPos + 1;
                     singleByte = assemblyBytes[stringPos];
                 }
-#if (DEBUG)
                 Console.WriteLine("[+] Assembly name identified: " + System.Text.Encoding.ASCII.GetString(assemblyName.ToArray()));
-#endif
                 return System.Text.Encoding.ASCII.GetString(assemblyName.ToArray());
             }
             else
             {
-#if (DEBUG)
                 Console.WriteLine("[X] Error, unable to identify string offset, may need to manually provide PE name (including file extension)");
-#endif
                 return null;
             }
         }
