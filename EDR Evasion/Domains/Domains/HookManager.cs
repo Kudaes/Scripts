@@ -15,9 +15,6 @@ namespace Domains
         private static IntPtr[] addresses;
         private int hookLength;
 
-        //Remove!!
-        [UnmanagedFunctionPointer(CallingConvention.StdCall, CharSet = CharSet.Unicode, SetLastError = true)]
-        public delegate IntPtr LoadLibrary_Delegate(string lpFileName);
 
         public IntPtr hookFunc(string lpFileName)
         {
