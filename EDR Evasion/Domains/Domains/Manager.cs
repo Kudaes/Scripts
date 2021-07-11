@@ -84,11 +84,17 @@ namespace Domains
                     Console.WriteLine("[+] Assembly successfully loaded.");
             }
 
-
-            if (ass.GetModules().Length == 1)
-                aName = ass.GetModules()[0].ScopeName;
+            if (ass != null)
+            {
+                if (ass.GetModules().Length == 1)
+                    aName = ass.GetModules()[0].ScopeName;
+                else
+                    aName = ass.FullName;
+            }
             else
-                aName = ass.FullName;
+            {
+                aName = null;
+            }
  
         }
         private void Execute(string method, string[] parameters)
@@ -142,6 +148,7 @@ namespace Domains
             dom = AppDomain.CreateDomain(name);
             loader = (Loader)dom.CreateInstanceAndUnwrap(Assembly.GetExecutingAssembly().FullName, typeof(Loader).FullName);
             loader.LoadAssembly(url, ref aName);
+
         }
 
         public static void ExecuteMethod( Loader ld, string method, params string[] parameters)
