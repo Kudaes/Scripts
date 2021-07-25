@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 
 namespace Domains
@@ -71,7 +72,14 @@ namespace Domains
 
         private void LoadAssembly(string url, ref string aName)
         {
-            byte[] buffer = new System.Net.WebClient().DownloadData(url);
+            IWebProxy wp = WebRequest.DefaultWebProxy;
+            wp.Credentials = CredentialCache.DefaultCredentials;
+            WebClient wc = new WebClient
+            {
+                Proxy = wp
+            };
+
+            byte[] buffer =  wc.DownloadData(url);
             try
             {
                 ass = TransactedAssembly.Load(buffer, aName);
