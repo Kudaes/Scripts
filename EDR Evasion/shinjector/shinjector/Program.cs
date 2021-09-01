@@ -42,6 +42,11 @@ namespace shinjector
                         Syscall.Inject(sc);
                         break;
                     }
+                case "5":
+                    {
+                        Test1.Inject(sc);
+                        break;
+                    }
                 default: break;
 
             }

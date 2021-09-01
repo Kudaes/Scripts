@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="SharpDisasm, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SharpDisasm.1.1.11\lib\net40\SharpDisasm.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -46,6 +49,7 @@
     <Compile Include="Casos\NTDLL.cs" />
     <Compile Include="Casos\PInvoke.cs" />
     <Compile Include="Casos\Syscall.cs" />
+    <Compile Include="Casos\Test1.cs" />
     <Compile Include="DInvoke\DynamicInvoke\Generic.cs" />
     <Compile Include="DInvoke\DynamicInvoke\Native.cs" />
     <Compile Include="DInvoke\DynamicInvoke\Win32.cs" />
@@ -61,6 +65,9 @@
     <Compile Include="DInvoke\SharedUtilities\Utilities.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
