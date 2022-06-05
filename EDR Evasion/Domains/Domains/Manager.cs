@@ -20,6 +20,13 @@ namespace Domains
         public void loadAssembly(string url, string method, string name)
         {
             Loader.CreateDomAndLoadAssembly(url, out Loader loader, out AppDomain dom, ref name);
+
+            if (name == null)
+            {
+                Console.WriteLine("[X] Assembly not loaded!");
+                return;
+            }
+
             if (!assemblies.ContainsKey(name))
             {
                 assemblies.Add(name, loader);
