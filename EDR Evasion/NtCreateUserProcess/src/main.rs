@@ -55,8 +55,8 @@ fn main() {
         attribut_list.attributes[0].union.value =  transmute(nt_image_path.Buffer.0);
 
         let aa =  0x00000001u64 << 44; // BlockDlls
-        attribut_list.attributes[1].attribute = 0x20010; // PS_ATTRIBUTE_MITIGATION_OPTIONS  
-        attribut_list.attributes[1].size = 8; 
+        attribut_list.attributes[1].attribute = 0x60000; 
+        attribut_list.attributes[1].size = size_of::<usize>(); 
         attribut_list.attributes[1].union.value =  transmute(&aa);
 
         let h = HANDLE::default();
